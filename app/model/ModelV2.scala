@@ -31,6 +31,84 @@ case class ResolvedJourneyConfigV2(journeyConfig: JourneyConfigV2) {
 
 object JourneyConfigV2 {
   implicit val format: Format[JourneyConfigV2] = Json.format[JourneyConfigV2]
+  val apiVersion = 2
+
+  def fromV1Model(v1: JourneyConfig): JourneyConfigV2 = {
+    JourneyConfigV2 (
+      version = apiVersion,
+      options = resolveJourneyOptions(v1),
+      labels = resolveLabels(v1.navTitle, v1.phaseBannerHtml, v1.lookupPage, v1.selectPage, v1.editPage, v1.confirmPage)
+    )
+  }
+
+  private def resolveJourneyOptions(v1: JourneyConfig): JourneyOptions = {
+    JourneyOptions(
+      continueUrl = v1.continueUrl,
+      homeNavHref = v1.homeNavHref,
+      additionalStylesheetUrl =  v1.additionalStylesheetUrl,
+      phaseFeedbackLink = v1.phaseFeedbackLink,
+      deskProServiceName = v1.deskProServiceName,
+      showPhaseBanner = v1.showPhaseBanner,
+      alphaPhase = v1.alphaPhase,
+      showBackButtons = v1.showBackButtons,
+      includeHMRCBranding = v1.includeHMRCBranding,
+      ukMode = v1.ukMode,
+      allowedCountryCodes = v1.allowedCountryCodes,
+      selectPageConfig = resolveSelectPageConfig(v1.selectPage),
+      confirmPageConfig = resolveConfirmPageConfig(v1.confirmPage),
+      timeoutConfig = resolveTimeoutConfig(v1.timeout)
+    )
+  }
+
+  private def resolveLabels(optNavTitle: Option[String],
+                    optPhaseBannerHtml: Option[String],
+                    optLookupPage: Option[LookupPage],
+                    optSelectPage: Option[SelectPage],
+                    optEditPage: Option[EditPage],
+                    optConfirmPage: Option[ConfirmPage]): Option[JourneyLabels] = {
+
+    val appLabels = (optNavTitle, optPhaseBannerHtml) match {
+      case (None, None) => None,
+      case _ => Some(optNavTitle, optPhaseBannerHtml)
+    }
+
+    val lookupLabels = optLookupPage map (v1 => LookupPageLabels(
+      v1.title, v1.heading, v1.filterLabel, v1.postcodeLabel, v1.submitLabel, v1.noResultsFoundMessage,
+      v1.resultLimitExceededMessage, v1.manualAddressLinkText))
+
+    val selectLabels = optSelectPage map (v1 => SelectPageLabels(
+      v1.title, v1.heading, v1.headingWithPostcode, v1.proposalListLabel, v1.submitLabel, v1.searchAgainLinkText,
+      v1.editAddressLinkText))
+
+    val editLabels = optEditPage map (v1 => EditPageLabels(v1.title, v1.heading, v1.line1Label, v1.line2Label,
+      v1.line3Label, v1.townLabel, v1.postcodeLabel, v1.countryLabel, v1.submitLabel))
+
+    val confirmLabels = optConfirmPage map (v1 => ConfirmPageLabels(v1.title, v1.heading, v1.infoSubheading,
+      v1.infoMessage, v1.submitLabel, v1.searchAgainLinkText, v1.changeLinkText, v1.confirmChangeText))
+
+    (lookupLabels, selectLabels, editLabels, confirmLabels) match {
+      case (None, None, None, None) =>
+        None
+      case _ =>
+        Some(JourneyLabels(
+          en = Some(LanguageLabels(appLabels, selectLabels, lookupLabels, editLabels, confirmLabels)))
+        )
+    }
+
+  }
+
+  private def resolveSelectPageConfig(optSelectPage: Option[SelectPage]): Option[SelectPageConfig] =
+    optSelectPage map (v1 => SelectPageConfig(v1.proposalListLimit, v1.showSearchAgainLink))
+
+  private def resolveConfirmPageConfig(optConfirmPage: Option[ConfirmPage]): Option[ConfirmPageConfig] =
+    optConfirmPage map (
+      v1 => ConfirmPageConfig(v1.showSearchAgainLink, v1.showSubHeadingAndInfo, v1.showChangeLink, v1.showConfirmChangeText)
+    )
+
+  private def resolveTimeoutConfig(optTimeout: Option[Timeout]): Option[TimeoutConfig] =
+    optTimeout map (
+      v1 => TimeoutConfig(v1.timeoutAmount, v1.timeoutUrl)
+    )
 }
 
 case class JourneyOptions(

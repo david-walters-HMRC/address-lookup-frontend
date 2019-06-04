@@ -640,4 +640,10 @@ class ModelV2Spec extends WordSpecLike with MustMatchers {
       ResolvedJourneyOptions(journeyDataV2Full.config.options.copy(alphaPhase = Some(false),showPhaseBanner = Some(false))).phase mustBe ""
     }
   }
+
+  "Converting a v1 model with all options set to a v2 model" should {
+    "Create a valid v2 model" in {
+
+    }
+  }
 }

@@ -68,23 +68,53 @@ object JourneyConfigV2 {
                     optConfirmPage: Option[ConfirmPage]): Option[JourneyLabels] = {
 
     val appLabels = (optNavTitle, optPhaseBannerHtml) match {
-      case (None, None) => None,
-      case _ => Some(optNavTitle, optPhaseBannerHtml)
+      case (None, None) => None
+      case _ => Some(AppLevelLabels(optNavTitle, optPhaseBannerHtml))
     }
 
     val lookupLabels = optLookupPage map (v1 => LookupPageLabels(
-      v1.title, v1.heading, v1.filterLabel, v1.postcodeLabel, v1.submitLabel, v1.noResultsFoundMessage,
-      v1.resultLimitExceededMessage, v1.manualAddressLinkText))
+      title = v1.title,
+      heading = v1.heading,
+      filterLabel = v1.filterLabel,
+      postcodeLabel = v1.postcodeLabel,
+      submitLabel = v1.submitLabel,
+      noResultsFoundMessage = v1.noResultsFoundMessage,
+      resultLimitExceededMessage = v1.resultLimitExceededMessage,
+      manualAddressLinkText = v1.manualAddressLinkText
+    ))
 
     val selectLabels = optSelectPage map (v1 => SelectPageLabels(
-      v1.title, v1.heading, v1.headingWithPostcode, v1.proposalListLabel, v1.submitLabel, v1.searchAgainLinkText,
-      v1.editAddressLinkText))
+      title = v1.title,
+      heading = v1.heading,
+      headingWithPostcode = v1.headingWithPostcode,
+      proposalListLabel = v1.proposalListLabel,
+      submitLabel = v1.submitLabel,
+      searchAgainLinkText = v1.searchAgainLinkText,
+      editAddressLinkText = v1.editAddressLinkText
+    ))
 
-    val editLabels = optEditPage map (v1 => EditPageLabels(v1.title, v1.heading, v1.line1Label, v1.line2Label,
-      v1.line3Label, v1.townLabel, v1.postcodeLabel, v1.countryLabel, v1.submitLabel))
+    val editLabels = optEditPage map (v1 => EditPageLabels(
+      title = v1.title,
+      heading = v1.heading,
+      line1Label = v1.line1Label,
+      line2Label = v1.line2Label,
+      line3Label = v1.line3Label,
+      townLabel = v1.townLabel,
+      postcodeLabel = v1.postcodeLabel,
+      countryLabel = v1.countryLabel,
+      submitLabel = v1.submitLabel
+    ))
 
-    val confirmLabels = optConfirmPage map (v1 => ConfirmPageLabels(v1.title, v1.heading, v1.infoSubheading,
-      v1.infoMessage, v1.submitLabel, v1.searchAgainLinkText, v1.changeLinkText, v1.confirmChangeText))
+    val confirmLabels = optConfirmPage map (v1 => ConfirmPageLabels(
+      title = v1.title,
+      heading = v1.heading,
+      infoSubheading = v1.infoSubheading,
+      infoMessage = v1.infoMessage,
+      submitLabel = v1.submitLabel,
+      searchAgainLinkText = v1.searchAgainLinkText,
+      changeLinkText = v1.changeLinkText,
+      confirmChangeText = v1.confirmChangeText
+    ))
 
     (lookupLabels, selectLabels, editLabels, confirmLabels) match {
       case (None, None, None, None) =>
@@ -94,7 +124,6 @@ object JourneyConfigV2 {
           en = Some(LanguageLabels(appLabels, selectLabels, lookupLabels, editLabels, confirmLabels)))
         )
     }
-
   }
 
   private def resolveSelectPageConfig(optSelectPage: Option[SelectPage]): Option[SelectPageConfig] =

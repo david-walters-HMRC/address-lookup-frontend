@@ -3,6 +3,7 @@ package model
 import org.scalatest.{MustMatchers, WordSpecLike}
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
+import utils.TestConstants
 
 class ModelV2Spec extends WordSpecLike with MustMatchers {
 
@@ -641,9 +642,128 @@ class ModelV2Spec extends WordSpecLike with MustMatchers {
     }
   }
 
-  "Converting a v1 model with all options set to a v2 model" should {
-    "Create a valid v2 model" in {
+  "Converting a v1 model to a v2 model" when {
+    "all options set" should {
+      "Create a valid v2 model" in {
+        val v2Model = JourneyConfigV2.fromV1Model(TestConstants.fullV1JourneyConfig)
+        v2Model mustBe TestConstants.fullV2JourneyConfig
+      }
+    }
 
+    "without lookup page config" should {
+      "return a V2 model without lookup page config" in {
+        val v1ConfigWithoutLookupPage = TestConstants.fullV1JourneyConfig.copy(lookupPage = None)
+        val actual = JourneyConfigV2.fromV1Model(v1ConfigWithoutLookupPage)
+        val expected = TestConstants.fullV2JourneyConfig.copy(labels = Some(JourneyLabels(
+          en = Some(LanguageLabels(
+            appLevelLabels = TestConstants.fullV2AppLabels,
+            selectPageLabels = TestConstants.fullV2SelectLabels,
+            lookupPageLabels = None,
+            editPageLabels = TestConstants.fullV2EditLabels,
+            confirmPageLabels = TestConstants.fullV2ConfirmLabels
+          ))
+        )))
+
+        actual mustBe expected
+      }
+    }
+
+    "without select page config" should {
+      "return a V2 model without select page config" in {
+        val v1ConfigWithoutSelectPage = TestConstants.fullV1JourneyConfig.copy(selectPage = None)
+        val actual = JourneyConfigV2.fromV1Model(v1ConfigWithoutSelectPage)
+        val expected = TestConstants.fullV2JourneyConfig.copy(
+          options = TestConstants.fullV2JourneyOptions.copy(selectPageConfig = None),
+          labels = Some(JourneyLabels(
+            en = Some(LanguageLabels(
+              appLevelLabels = TestConstants.fullV2AppLabels,
+              selectPageLabels = None,
+              lookupPageLabels = TestConstants.fullV2LookupLabels,
+              editPageLabels = TestConstants.fullV2EditLabels,
+              confirmPageLabels = TestConstants.fullV2ConfirmLabels
+            ))
+          ))
+        )
+
+        actual mustBe expected
+      }
+    }
+
+    "without edit page config" should {
+      "return a V2 model without edit page config" in {
+        val v1ConfigWithoutEditPage = TestConstants.fullV1JourneyConfig.copy(editPage = None)
+        val actual = JourneyConfigV2.fromV1Model(v1ConfigWithoutEditPage)
+        val expected = TestConstants.fullV2JourneyConfig.copy(
+          labels = Some(JourneyLabels(
+            en = Some(LanguageLabels(
+              appLevelLabels = TestConstants.fullV2AppLabels,
+              selectPageLabels = TestConstants.fullV2SelectLabels,
+              lookupPageLabels = TestConstants.fullV2LookupLabels,
+              editPageLabels = None,
+              confirmPageLabels = TestConstants.fullV2ConfirmLabels
+            ))
+          )))
+
+        actual mustBe expected
+      }
+    }
+
+    "without confirm page config" should {
+      "return a V2 model without confirm page config" in {
+        val v1ConfigWithoutConfirmPage = TestConstants.fullV1JourneyConfig.copy(confirmPage = None)
+        val actual = JourneyConfigV2.fromV1Model(v1ConfigWithoutConfirmPage)
+        val expected = TestConstants.fullV2JourneyConfig.copy(
+          options = TestConstants.fullV2JourneyOptions.copy(confirmPageConfig = None),
+          labels = Some(JourneyLabels(
+            en = Some(LanguageLabels(
+              appLevelLabels = TestConstants.fullV2AppLabels,
+              selectPageLabels = TestConstants.fullV2SelectLabels,
+              lookupPageLabels = TestConstants.fullV2LookupLabels,
+              editPageLabels = TestConstants.fullV2EditLabels,
+              confirmPageLabels = None
+            ))
+          )))
+
+        actual mustBe expected
+      }
+    }
+
+    "without journey options" should {
+      "return a V2 model with all journey options set to none" in {
+        val v1ConfigWithoutJourneyOptions = TestConstants.fullV1JourneyConfig.copy(
+          continueUrl = "testUrl",
+          homeNavHref = None,
+          navTitle = None,
+          additionalStylesheetUrl = None,
+          deskProServiceName = None,
+          showPhaseBanner = None,
+          phaseFeedbackLink = None,
+          phaseBannerHtml = None,
+          includeHMRCBranding = None,
+          alphaPhase = None,
+          showBackButtons = None,
+          ukMode = None,
+          allowedCountryCodes = None)
+
+        val actual = JourneyConfigV2.fromV1Model(v1ConfigWithoutJourneyOptions)
+        val expected = TestConstants.fullV2JourneyConfig.copy(
+          options = journeyOptionsMinimal.copy(
+            selectPageConfig = TestConstants.fullV2SelectPageConfig,
+            confirmPageConfig = TestConstants.fullV2ConfirmPageConfig,
+            timeoutConfig = TestConstants.fullV2TimeoutConfig
+          ),
+          labels = Some(JourneyLabels(
+            en = Some(LanguageLabels(
+              appLevelLabels = None,
+              selectPageLabels = TestConstants.fullV2SelectLabels,
+              lookupPageLabels = TestConstants.fullV2LookupLabels,
+              editPageLabels = TestConstants.fullV2EditLabels,
+              confirmPageLabels = TestConstants.fullV2ConfirmLabels
+            ))
+        )))
+
+        actual mustBe expected
+      }
     }
   }
 }
